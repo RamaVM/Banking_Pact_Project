@@ -1,0 +1,26 @@
+{
+  "name": "banking_pact_project",
+  "version": "1.0.0",
+  "main": "index.js",
+"scripts": {
+  "start": "tsx src/provider/bankingApi.ts",
+  "test:provider": "tsx tests/provider.pact.test.ts",
+  "test:api": "playwright test tests/account.api.spec.ts",
+  "test:consumer-pact": "tsx tests/consumer.pact.test.ts"
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "@pact-foundation/pact": "^17.1.4",
+    "@playwright/test": "^1.64.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
