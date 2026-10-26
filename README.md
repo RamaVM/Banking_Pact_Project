@@ -319,6 +319,48 @@ npx playwright show-report
 
 The report helps identify passed and failed tests and inspect test execution details.
 
+## Continuous Integration (CI)
+
+This project uses GitHub Actions to automatically execute API and Pact contract tests whenever code is pushed to the configured branches or a pull request is opened.
+
+### CI Pipeline
+
+The workflow is defined in `.github/workflows/ci.yml`.
+
+The pipeline performs the following steps:
+
+1. Checks out the repository.
+2. Sets up Node.js.
+3. Installs dependencies using `npm ci`.
+4. Runs consumer Pact tests to generate the contract.
+5. Starts the banking API.
+6. Executes Playwright API tests against the running API.
+7. Verifies the generated Pact contract against the provider.
+8. Uploads available Playwright reports and test output as workflow artifacts.
+
+### Automated Test Coverage
+
+- REST API endpoint validation
+- Positive and negative API scenarios
+- HTTP status code and response body validation
+- Consumer-driven contract testing
+- Provider contract verification
+
+### Viewing CI Results
+
+1. Open the repository on GitHub.
+2. Navigate to the **Actions** tab.
+3. Select the latest workflow run.
+4. Review the test logs and download available artifacts.
+
+The workflow helps identify API regressions and contract mismatches automatically.
+
+### Current Limitations
+
+- Account data is stored in an in-memory Map and resets when the API restarts.
+- The workflow validates the application but does not deploy it to a hosting environment.
+- The pipeline currently runs on GitHub-hosted Ubuntu runners.
+
 ## Design Considerations
 
 - **Reusable client functions:** Common HTTP request logic is centralized in the consumer API client.
