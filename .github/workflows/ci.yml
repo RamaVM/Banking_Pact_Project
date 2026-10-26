@@ -1,0 +1,71 @@
+name: Banking Pact Project CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: Run API and Pact Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate consumer Pact contract
+        run: npm run test:consumer-pact
+
+      - name: Start API and run tests
+        shell: bash
+        run: |
+          npm start > api.log 2>&1 &
+          API_PID=$!
+
+          trap 'kill "$API_PID" 2>/dev/null || true' EXIT
+
+          echo "Waiting for banking API to start..."
+
+          for i in {1..30}; do
+            if curl --silent --fail http://localhost:3000/accounts > /dev/null; then
+              echo "Banking API is ready."
+              break
+            fi
+
+            sleep 2
+          done
+
+          if ! curl --silent --fail http://localhost:3000/accounts > /dev/null; then
+            echo "Banking API failed to start."
+            cat api.log
+            exit 1
+          fi
+
+          echo "Running Playwright API tests..."
+          npm run test:api
+
+          echo "Verifying Pact contract against the provider..."
+          npm run test:provider
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+            api.log
+          if-no-files-found: ignore
+          retention-days: 7
